@@ -4,7 +4,7 @@ try:
     import threading
     import traceback
 
-    import shared_code.Services
+    #import shared_code.Services
     from shared_code.AzureHelper import CONT, XEDB, dumps, hasattr, loads
 except:
     from AzureHelper import loads,dumps,CONT,XEDB,hasattr
@@ -30,7 +30,7 @@ from openpyxl import load_workbook
 from openpyxl.utils.cell import coordinate_from_string
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
-import shared_code.coolfish_statics
+#import shared_code.coolfish_statics
 
 BLMAP={
     "Baden-Württemberg":"BW",
@@ -841,28 +841,43 @@ def daysInYear(year):
 
 class ParseTabText:
 
-    def __init__(self, fname, header=1, seperator="\t", linebreak=""):
-        self.ifile = open(fname)
-        for _ in range(1, header):
-            _ = self.ifile.readline()
-        atts = u"" + self.ifile.readline()
-        attl = atts.split(seperator)
+    def __init__(self, fname, header=1, seperator="\t", linebreak="",lines=None):
+        self.ifile=None
+        if lines==None:
+            #self.ifile = open(fname)
+            self.ifile = open(fname,"r",encoding="utf8")
+            for _ in range(1, header):
+                _ = self.ifile.readline()
+            atts = u"" + self.ifile.readline()
+            attl = atts.split(seperator)
+            if linebreak != "":
+                self.lines = self.ifile.read()
+                self.lines = self.lines.split(linebreak)
+            else:
+                self.lines = None
+        else:
+            self.lines =lines
+            attl=self.lines.pop(0).split(seperator)
         self.seperator = seperator
         self._row = 2
         self.attl = namesToVars(attl)
-        if linebreak != "":
-            self.lines = self.ifile.read()
-            self.lines = self.lines.split(linebreak)
-        else:
-            self.lines = None
 
     def objects(self, abrechnmonat_mm=None):
         while 1:
-            if self.lines:
-                line = self.lines.pop(0)
+            if self.lines !=None:
+                if self.lines==[]:
+                    line=""
+                else:
+                    line = self.lines.pop(0)
             else:
                 line = self.ifile.readline()
+                    
             if not line:break
+            mdl=matchall('(?<=\")(.*?)(?=\")',line)
+            for md in mdl:
+                md2=md.replace(self.seperator,"###***###")
+                #line=line.replace("\""+md+"\"",md2)
+                line=line.replace(md,md2)
             vl = line.split(self.seperator)
             ai = 0
             o = CONT()
@@ -872,13 +887,20 @@ class ParseTabText:
                     continue
                 v = u"" + v.strip()
                 if v and ord(v[0]) > 128:v = v[1:]
+                v=v.replace("###***###",self.seperator)
+                if v.startswith("\"") and v.endswith("\""):
+                    v=v[1:-1]
+                if "\"" in v:
+                    print
+                v=v.replace("\"\"","\"")
                 setattr(o, self.attl[ai], v)
                 ai += 1
             if abrechnmonat_mm and o.abrechnmonat_mm != abrechnmonat_mm:continue
             o._row = self._row
             self._row += 1
             yield o
-        self.ifile.close()
+        if self.ifile:
+            self.ifile.close()
         
 def getDictFromObject(otype, keya):
     retd = {}
