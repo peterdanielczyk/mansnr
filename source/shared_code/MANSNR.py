@@ -562,13 +562,6 @@ def getPoolNumber(q_nummer):
             pool=feedback.pool
     return str(pool)
 
-def getPoolDates(q_nummer):
-        from Services.getGrad360prov import POOLSTARTDATES
-        my_pool=getPoolNumber(q_nummer)
-        ret=CONT()
-        ret.startdate=str(getPoolStartDate(my_pool,POOLSTARTDATES))[0:11]
-        ret.enddate=str(getPoolEndDate(my_pool,POOLSTARTDATES))[0:11]
-        return ret
 
 def setObjectAttribute(iparam,object,attr,val,ifdiff=0):
     '''Sets an attribute to a specific value for an object.
@@ -1260,63 +1253,6 @@ def memAsDict(o: Any) -> Dict[str, Any]:
         ret[attribute_name] = getattr(o, attribute_name)  # Use 'o' to access the attribute value
     return ret
 
-def handleUpload(req: Any) -> CONT:
-    """
-    Handles file uploads by processing the uploaded file based on its filename and content.
-    
-    This function identifies the type of the uploaded file (training data, charging history, payslip)
-    and delegates processing to the appropriate handler function. If the file doesn't match any specific
-    criteria, it's saved to a determined upload path.
-    
-    Args:
-        req: The request object containing headers, cookies, and files uploaded.
-    
-    Returns:
-        A CONT object with a 'RetCode' indicating the result of the upload operation.
-    """
-    iparam = CONT()
-    addIparamVals(iparam)
-
-    iparam.xsecookie = req.headers.get("phrAccessToken", req.cookies.get("phrAccessToken"))
-    
-    linf = getLinf(iparam)
-    form = req.files
-    
-    filename = form['file'].filename
-    data = form['file'].read()
-    
-    perf_cards2023 = "perf_cards_2023.zip" == filename
-    if perf_cards2023:
-        logging.info("Uploading "+filename)
-        shared_code.Services.getWorker.readPerfCards2023(iparam, linf, data)
-        return
-
-
-    trainings = "trainings" in filename.lower() and not filename.endswith(".py")
-    chargefile = matchall("CarData-ChargingHistory_(.+?)_(.+?).json", filename) or \
-                 matchall("BMW-CarData-Ladehistorie_(.+?)_(.+?).json", filename) or \
-                 matchall("CarData-Ladehistorie_(.+?)_(.+?).json", filename)
-    
-    if trainings:
-        tmod = reloadService("getTrainings")
-        return tmod.handleUpload(iparam, linf, data)
-    
-    if chargefile:
-        return handleChargeFile(iparam, linf, chargefile, data)
-    
-    psmonth = matchall("0020100.+?([0-9].+).*?.pdf", filename)
-    if psmonth:
-        tmod = reloadService("splitPayslip")
-        return tmod.handleUpload(iparam, linf, data, filename)
-    
-    uplpath = determine_upload_path(linf, filename)
-    logging.info("#########  in directory %s"%os.getcwd())
-    with open(uplpath, "wb") as fwrite:
-        fwrite.write(data)
-    
-    ret = CONT()
-    ret.RetCode = "ok"
-    return ret
 
 def determine_upload_path(linf: dict, filename: str) -> str:
     """
@@ -2978,10 +2914,6 @@ def handleSetValues(iparam,internal=0,nohistory=0):
         if orgotype:
             iparam.otype=orgotype
         
-        #special case feedback form
-        if iparam.otype=="fbpofo21":
-            from shared_code.Services.getTalent21y import fixMissingFormData
-            fixMissingFormData(iparam,[oc])
 
     return olist,ret
 
@@ -3973,13 +3905,11 @@ hr {
                     bds+=bd
                 ret+=" - Birthdays reported: "+bds
             ret+="<br>"
-    import shared_code.Services.getAdpdiff
-    reload(shared_code.Services.getAdpdiff)
     chkdate=datetime.date(iparam.dtnow.year,iparam.dtnow.month,eomday(iparam.dtnow.year,iparam.dtnow.month))
     chkdate=chkdate+timedelta(days=1)
     chkdate=date2String(chkdate)
     chkdate=max(chkdate,"2024-01-01")
-    geh_in_month=shared_code.Services.getAdpdiff.getGehaltInMonth(iparam,chkdate[:7],qnum)
+    geh_in_month=None
     iparam.otype = "gehalt"
 
     SWITCH_OFF_GEHALT=1
@@ -4075,10 +4005,6 @@ hr {
         cb = CONT()
         cb.oid = qnum  # cb1.oid
         cb.q_nummer = qnum  # cb1.oid
-        from shared_code.Services import getCompbike
-        reload(getCompbike)
-        vals = list(getCompbike.getCompbike(iparam, [cb]).values())
-        ret += "<hr/><h7></h7>\n<h2>Company Bike Entitlement<h2>" + handleHTML(iparam, vals, 0, 1, ["q_nummer", "name", "vertragsart", "eintritt", "austritt", "berechtigung"])
     
     return ret
 
@@ -4237,10 +4163,7 @@ def handle(iparam,internal=0):
 
     if (XEDB.AZURE and not internal and iparam.otype not in ["open_charge","ping","jotform",'sap_absence_upload']) or (not internal and not linf and iparam.otype not in ["open_charge","ping",'sap_absence_upload']):
         if XEDB.DOMAIN!="carit" or XEDB.AZURE:
-            import shared_code.oidConnect
-            if XEDB.HOSTNAME in ["PITSNUC","PITSLG"]:
-                reload(shared_code.oidConnect)
-            linf=shared_code.oidConnect.checkAuth(iparam)
+            pass
         else:
             import requests
             headers = {'content-type':'application/json','Cookie': 'phrAccessToken=%s'%iparam.xsecookie}
