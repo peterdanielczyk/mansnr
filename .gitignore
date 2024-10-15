@@ -1,0 +1,5 @@
+output/*
+source/build/*
+source/dist/*
+source/shared_code/__pycache__/** */
+source/shared_code/__pycache__/WappHandler.cpython-310.pyc

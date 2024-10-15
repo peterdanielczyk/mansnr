@@ -22,13 +22,63 @@ from importlib import reload
 from io import BytesIO
 from typing import Any, List, Optional
 
-import holidays
+import holidays, glob
 import psycopg2
 import pytz
 import openpyxl
 from openpyxl import load_workbook
 from openpyxl.utils.cell import coordinate_from_string
 from openpyxl.worksheet.table import Table, TableStyleInfo
+
+def checkInputFiles(inp_dir):
+    ret=[]
+    inpfiles=glob.glob(inp_dir+"*.*")
+    if XEDB.input_name=="Output_path":#special case: find latest output file
+        if inpfiles:
+            inpfiles.sort(reverse=True)
+            inpfiles=[inpfiles[0]]
+    for inpfile in inpfiles:
+        suffok=0
+        for suff in XEDB.ALLOWED_FTYPES:
+            if inpfile.endswith(suff):
+                suffok=1
+                break
+        if not suffok: continue
+        r=CONT()
+        r.suff=suff
+        r.inpfshort=inpfile.split("\\")[-1]
+        #skip working copies
+        if r.inpfshort.startswith("~$"):continue
+        ml=r.inpfshort.split("__")
+        r.PRIO=ml[1] if len(ml)>1 else "-"
+        r.SOURCE=ml[2] if len(ml)>2 else "-"
+        if suff==".xlsx":
+            r.ptt=MEXCEL(inpfile, read_only=True)
+            r.ptt.org_attl=[]
+            r.ptt.NAMESCOL={}
+            r.ptt.COLNAMES={}
+            for i in range(1,r.ptt.asheet.max_column+1):
+                cname=r.ptt.asheet.cell(1,i).value
+                r.ptt.org_attl.append(cname)
+                vname=namesToVars([cname])[0]
+                r.ptt.NAMESCOL[vname]=i
+                r.ptt.COLNAMES[i]=vname
+            r.ptt.attl = list(r.ptt.COLNAMES.values())
+        else:
+            r.ptt=ParseTabText(inpfile,1,",")
+        ID_ATT='rv2._id'
+        FOUND_ID="YES" if ID_ATT in r.ptt.org_attl else "NO"
+        if XEDB.input_name=="Output_path":
+            r.PRIO="99"
+            r.SOURCE="Repository"
+        Logger.print("Checking file %s:\n     Found Prio %s\n     Found Source %s\n     Found %s: %s"%(r.inpfshort,r.PRIO,r.SOURCE,ID_ATT,FOUND_ID))
+        if len(r.PRIO)<2 or len(r.SOURCE)<2 or FOUND_ID=="NO":
+            Logger.print("Skipping file because Prio and/or Source or %s is missing."%ID_ATT)
+            continue
+        ret.append(r)
+    ret.sort(key=lambda x: x.PRIO, reverse=False)
+    return ret
+
 
 #import shared_code.coolfish_statics
 
@@ -315,7 +365,7 @@ def daysAbsenceCMonth(iparam: Any, alist: List[Any]) -> int:
 def getDataFromDatabaseRaw(sql,verbose=0):
     '''* This function returns data based on a raw sql statement.
     * It uses much less ``hidden_magic`` than most other database calls in the framework.'''    
-    if verbose:print(sql)
+    if verbose:Logger.print(sql)
     cursor = XEDB.DBConn.cursor()
     cursor.execute(sql)
     result = cursor.fetchall() if cursor.description else None    
@@ -540,6 +590,75 @@ def setObjectAttribute(iparam,object,attr,val,ifdiff=0):
         setattr(object,attr,val)
     return ret
 
+from openpyxl.comments import Comment
+from openpyxl.utils import units
+import sys
+ALLOGGED=[]
+
+class CFLogger:
+    def __init__(self):
+        self.lf=open("snr_merge.log","w")
+    def print(self,a1,a2=None,a3=None):
+        if a2 and a3:
+            print(a1,a2,a3)
+            self.lf.write(str(a1))
+            self.lf.write(str(a2))
+            self.lf.write(str(a3))
+            self.lf.write("\n")
+        elif a2:
+            print(a1,a2)
+            self.lf.write(str(a1))
+            self.lf.write(str(a2))
+            self.lf.write("\n")
+        else:
+            print(a1)
+            self.lf.write(str(a1))
+            self.lf.write("\n")
+        self.lf.flush()
+        #sys.stdout.flush()
+
+XEDB.Logger=CFLogger()
+Logger=XEDB.Logger
+class ECONT:
+    def __getattr__(self, name):
+        if name in self.__dict__:
+            # Default behaviour
+            return self.__getattribute__(self, name)
+        else:
+            return None
+    def setComment(self,att,cmt):
+        cn=self._cfe_table.NAMESCOL.get(att)
+        if not cn:
+            Logger.print("###ERROR: column %s not found ( for setComment() )"%att)
+        else:
+            #cmt=cmt.encode("ascii","ignore").decode('UTF-8')
+            #cmt="askakdjkajdkdja\ndskjdsdkjsdksdjssd\nskdjsjdskd"
+            if 0 and cmt not in ALLOGGED:
+                Logger.print("0000 "+cmt)
+                ALLOGGED.append(cmt)
+            cmt=cmt[:1000]
+            comment = Comment(cmt, "Author")
+            comment.width = units.points_to_pixels(300)
+            comment.height = units.points_to_pixels(250)
+            self._cfe_table.sheet.cell(self._cfe_row,cn).comment=comment
+    def getComment(self,att):
+        cn=self._cfe_table.NAMESCOL.get(att)
+        if not cn:
+            Logger.print("###ERROR: column %s not found ( for getComment() )"%att)
+        else:
+            cmt=self._cfe_table.sheet.cell(self._cfe_row,cn).comment
+            if not cmt:
+                cmt=""
+            else:
+                cmt=cmt.text
+            return cmt
+    def setValue(self,att,val):
+        cn=self._cfe_table.NAMESCOL.get(att)
+        if not cn:
+            Logger.print("###ERROR: column %s not found ( for setValue() )"%att)
+        else:
+            setattr(self,att,val)
+            self._cfe_table.sheet.cell(self._cfe_row,cn).value=val
 
 class CFTable:
     def __init__(self) -> None:
@@ -555,6 +674,8 @@ class CFTable:
                 val=getattr(o,attr)
                 if isCont(val):val=val.value
                 sh.cell(self.row,col+self.startColumn-1).value=val
+        o._cfe_row=self.row
+        o._cfe_table=self
         self.row+=1
 
     def clearContent(self):
@@ -594,12 +715,58 @@ factor_of_font_size_to_width = {
 }
 
 class MEXCEL:
-    def __init__(self,fname=None) -> None:
+    def __init__(self,fname=None,read_only=False) -> None:
         if fname:
             self.filename=fname
-            self.wb = load_workbook(filename = fname)
+            self.wb = load_workbook(filename = fname,read_only=read_only)
             self.tables={}
             self.asheet=self.wb.worksheets[0]
+            self.objects_row=2
+
+    def readSheetValues(self,asheet=None):
+        asheet=asheet if asheet else self.asheet
+        asheet.value_matrix={}
+        cell_matrix=asheet["A1:Z%ld"%asheet.max_row]
+        for r in range(1,asheet.max_row+1):
+            for cell in cell_matrix[r-1]:
+                if cell.data_type=="f":
+                    val=None
+                else:
+                    val=cell.value
+                getOrAdd(asheet.value_matrix,r,[]).append(val)
+
+
+    def objects(self,only_cols=None,preread=0):
+        if preread and not hasattr(self.asheet,"value_matrix"):
+            self.readSheetValues()
+        while 1:
+            allempty=1
+            ro=CONT()
+            if self.objects_row%1000==0 and XEDB.verbose:
+                print("Reading row %ld"%self.objects_row)
+            if self.objects_row==24:
+                print
+            for i in range(1,self.asheet.max_column+1):
+                col_name=self.COLNAMES[i]
+                if only_cols and col_name not in only_cols:continue
+                if preread:
+                    cvalue=self.asheet.value_matrix[self.objects_row][i-1]
+                else:
+                    cvalue=self.asheet.cell(self.objects_row,i).value
+                #print(repr(type(cvalue)))
+                if repr(type(cvalue)) == "<class 'datetime.datetime'>":
+                    cvalue=date2String(cvalue)
+                if allempty and cvalue:
+                    allempty=0
+                setattr(ro,col_name,cvalue)
+            if not allempty and self.objects_row<self.asheet.max_row:
+                self.objects_row+=1
+                yield(ro)
+            else:
+                self.objects_row=2
+                if XEDB.verbose:
+                    print("Stop Reading")
+                break
 
     def setAutoHeight(self,row_number,font_size,cwidth,stretch=1.0):
         font_params = factor_of_font_size_to_width[font_size]
@@ -860,9 +1027,10 @@ class ParseTabText:
             attl=self.lines.pop(0).split(seperator)
         self.seperator = seperator
         self._row = 2
+        self.org_attl=attl
         self.attl = namesToVars(attl)
 
-    def objects(self, abrechnmonat_mm=None):
+    def objects(self, ATTS_TO_READ=None,preread=1):
         while 1:
             if self.lines !=None:
                 if self.lines==[]:
@@ -871,8 +1039,12 @@ class ParseTabText:
                     line = self.lines.pop(0)
             else:
                 line = self.ifile.readline()
-                    
+                 
             if not line:break
+            if line[-1]=="\n":
+                line=line[0:-1]
+            if line.startswith("\"") and line.endswith("\""):
+                line=line[1:-1]
             mdl=matchall('(?<=\")(.*?)(?=\")',line)
             for md in mdl:
                 md2=md.replace(self.seperator,"###***###")
@@ -885,9 +1057,12 @@ class ParseTabText:
                 if not self.attl[ai]:
                     ai += 1
                     continue
+                if ATTS_TO_READ and self.attl[ai] not in ATTS_TO_READ:continue
                 v = u"" + v.strip()
                 if v and ord(v[0]) > 128:v = v[1:]
                 v=v.replace("###***###",self.seperator)
+                if v.startswith("\"") and v.endswith("\""):
+                    v=v[1:-1]
                 if v.startswith("\"") and v.endswith("\""):
                     v=v[1:-1]
                 if "\"" in v:
@@ -895,7 +1070,6 @@ class ParseTabText:
                 v=v.replace("\"\"","\"")
                 setattr(o, self.attl[ai], v)
                 ai += 1
-            if abrechnmonat_mm and o.abrechnmonat_mm != abrechnmonat_mm:continue
             o._row = self._row
             self._row += 1
             yield o
@@ -4273,6 +4447,11 @@ def getHolidaysGermany(thisyear, bundesland):
         ret=dict(holidays.Germany(years=int(thisyear), prov=bundesland))
         XEDB.HOLDAY_GER[(thisyear, bundesland)]=ret
     return ret
+
+def extendUnique(ll,llsrc):
+    for el in llsrc:
+        if el not in ll:
+            ll.append(el)
 
 def appendUnique(ll,el):
     if el not in ll:

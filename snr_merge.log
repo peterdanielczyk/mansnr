@@ -1,0 +1,115 @@
+======CHECKING Input_scope_path (/Temp/80_SNr-Reporting/10_Input/Input Fremdlisten aktuell/Digital Trucks/)=========
+
+Checking file Input__02__Digital56__eration_9.24_Generation_9.24_Digital56_2029.05.3_2024-06-07.csv:
+     Found Prio 02
+     Found Source Digital56
+     Found rv2._id: YES
+Checking file Input__03__Digital69__eration_2.25_Generation_2.25_DIGITAL69_2029.05.3_2024-09-02.csv:
+     Found Prio 03
+     Found Source Digital69
+     Found rv2._id: YES
+Checking file Input__04__Digital51__eration_9.24_Generation_9.24_Digital51_2028.05.3_2024-06-07.csv:
+     Found Prio 04
+     Found Source Digital51
+     Found rv2._id: YES
+Checking file Input__05__Digital57___EP_1_Generation_2.25_Generation_2.25_DIGITAL57_2029.12.3_2024-09-02.csv:
+     Found Prio 05
+     Found Source Digital57
+     Found rv2._id: YES
+Checking file Input__06__Digital57__sharing_bom_EP_1_Generation_2.25_Generation_2.25_DIGITAL57_2029.12.xlsx:
+     Found Prio 06
+     Found Source Digital57
+     Found rv2._id: YES
+Checking file Input__08__Digital48__eration_9.24_Generation_9.24_Digital48_2028.05.3_2024-06-07.csv:
+     Found Prio 08
+     Found Source Digital48
+     Found rv2._id: YES
+Checking file Input__08__Digital49__eration_9.24_Generation_9.24_Digital49_2028.05.3_2024-06-07.csv:
+     Found Prio 08
+     Found Source Digital49
+     Found rv2._id: YES
+Checking file Input__08__Digital50__eration_9.24_Generation_9.24_Digital50_2028.12.3_2024-06-07.csv:
+     Found Prio 08
+     Found Source Digital50
+     Found rv2._id: YES
+Checking file Input__08__Digital54__eration_9.24_Generation_9.24_Digital54_2028.06.1_2024-06-07.csv:
+     Found Prio 08
+     Found Source Digital54
+     Found rv2._id: YES
+Checking file Input__08__Digital55__eration_9.24_Generation_9.24_Digital55_2028.06.1_2024-06-07.csv:
+     Found Prio 08
+     Found Source Digital55
+     Found rv2._id: YES
+Checking file Input__08__Digital57__eration_2.25_Generation_2.25_DIGITAL57_2029.12.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital57
+     Found rv2._id: YES
+Checking file Input__08__Digital59__eration_2.25_Generation_2.25_DIGITAL59_2026.03.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital59
+     Found rv2._id: YES
+Checking file Input__08__Digital63__eration_2.25_Generation_2.25_DIGITAL63_2029.05.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital63
+     Found rv2._id: YES
+Checking file Input__08__Digital64__eration_2.25_Generation_2.25_DIGITAL64_2029.05.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital64
+     Found rv2._id: YES
+Checking file Input__08__Digital65__eration_2.25_Generation_2.25_DIGITAL65_2029.05.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital65
+     Found rv2._id: YES
+Checking file Input__08__Digital66__eration_2.25_Generation_2.25_DIGITAL66_2029.05.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital66
+     Found rv2._id: YES
+Checking file Input__08__Digital67__eration_2.25_Generation_2.25_DIGITAL67_2029.05.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital67
+     Found rv2._id: YES
+Checking file Input__08__Digital68__eration_2.25_Generation_2.25_DIGITAL68_2029.05.3_2024-09-02.csv:
+     Found Prio 08
+     Found Source Digital68
+     Found rv2._id: YES
+Checking file Input__09__CombinedBOM__20240902_CombinedBOM.xlsx:
+     Found Prio 09
+     Found Source CombinedBOM
+     Found rv2._id: YES
+
+====  Starting file processing for Input_scope_path at 2024-10-13 19:57:05 ====
+Input file processed at 2024-10-13 19:57:07: Input__02__Digital56__eration_9.24_Generation_9.24_Digital56_2029.05.3_2024-06-07.csv, 34760 records
+Input file processed at 2024-10-13 19:57:09: Input__03__Digital69__eration_2.25_Generation_2.25_DIGITAL69_2029.05.3_2024-09-02.csv, 38247 records
+Input file processed at 2024-10-13 19:57:11: Input__04__Digital51__eration_9.24_Generation_9.24_Digital51_2028.05.3_2024-06-07.csv, 32003 records
+Input file processed at 2024-10-13 19:57:14: Input__05__Digital57___EP_1_Generation_2.25_Generation_2.25_DIGITAL57_2029.12.3_2024-09-02.csv, 42978 records
+Input file processed at 2024-10-13 19:57:24: Input__06__Digital57__sharing_bom_EP_1_Generation_2.25_Generation_2.25_DIGITAL57_2029.12.xlsx, 42916 records
+Input file processed at 2024-10-13 19:57:26: Input__08__Digital48__eration_9.24_Generation_9.24_Digital48_2028.05.3_2024-06-07.csv, 39010 records
+Input file processed at 2024-10-13 19:57:27: Input__08__Digital49__eration_9.24_Generation_9.24_Digital49_2028.05.3_2024-06-07.csv, 29377 records
+Input file processed at 2024-10-13 19:57:29: Input__08__Digital50__eration_9.24_Generation_9.24_Digital50_2028.12.3_2024-06-07.csv, 31572 records
+Input file processed at 2024-10-13 19:57:31: Input__08__Digital54__eration_9.24_Generation_9.24_Digital54_2028.06.1_2024-06-07.csv, 33208 records
+Input file processed at 2024-10-13 19:57:33: Input__08__Digital55__eration_9.24_Generation_9.24_Digital55_2028.06.1_2024-06-07.csv, 29748 records
+Input file processed at 2024-10-13 19:57:35: Input__08__Digital57__eration_2.25_Generation_2.25_DIGITAL57_2029.12.3_2024-09-02.csv, 42978 records
+Input file processed at 2024-10-13 19:57:38: Input__08__Digital59__eration_2.25_Generation_2.25_DIGITAL59_2026.03.3_2024-09-02.csv, 56755 records
+Input file processed at 2024-10-13 19:57:39: Input__08__Digital63__eration_2.25_Generation_2.25_DIGITAL63_2029.05.3_2024-09-02.csv, 31145 records
+Input file processed at 2024-10-13 19:57:41: Input__08__Digital64__eration_2.25_Generation_2.25_DIGITAL64_2029.05.3_2024-09-02.csv, 30312 records
+Input file processed at 2024-10-13 19:57:42: Input__08__Digital65__eration_2.25_Generation_2.25_DIGITAL65_2029.05.3_2024-09-02.csv, 32708 records
+Input file processed at 2024-10-13 19:57:44: Input__08__Digital66__eration_2.25_Generation_2.25_DIGITAL66_2029.05.3_2024-09-02.csv, 32146 records
+Input file processed at 2024-10-13 19:57:46: Input__08__Digital67__eration_2.25_Generation_2.25_DIGITAL67_2029.05.3_2024-09-02.csv, 30678 records
+Input file processed at 2024-10-13 19:57:48: Input__08__Digital68__eration_2.25_Generation_2.25_DIGITAL68_2029.05.3_2024-09-02.csv, 37223 records
+Input file processed at 2024-10-13 19:58:01: Input__09__CombinedBOM__20240902_CombinedBOM.xlsx, 15367 records
+======CHECKING Input_other_path ()=========
+
+
+====  Starting file processing for Input_other_path at 2024-10-13 19:58:01 ====
+======CHECKING Output_path (/Temp/TS/mansnr/output/)=========
+
+Checking file target_2024-10-12_12-30-49_Pit.xlsx:
+     Found Prio 99
+     Found Source Repository
+     Found rv2._id: YES
+
+====  Starting file processing for Output_path at 2024-10-13 19:58:01 ====
+Input file processed at 2024-10-13 19:58:22: target_2024-10-12_12-30-49_Pit.xlsx, 9093 records
+9093 records read - 61035 target rows written
+writing /Temp/TS/mansnr/output/target_2024-10-13_19-58-22_Pit.xlsx
+Time needed for allover processing: 88 seconds
